@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from hospital_readmission.narratives import NARRATIVES
+
 
 def _pct(value: float) -> str:
     return f"{value * 100:.1f}%"
@@ -94,6 +96,10 @@ def write_report(path: Path, results: dict) -> None:
         "A04. Only race, gender and age are available. Adjusted odds compare each race group with Caucasian patients and men with women, holding the clinical covariates in the guide fixed. An odds ratio below 1 is lower odds than the reference, not evidence of better care. There is no income, insurance, education, housing or neighbourhood field to add.",
         "",
         f"A05. The simulated programme enrols {_pct(results['assumptions']['enrolment'])} of the high-risk tier and assumes a {_pct(results['assumptions']['relative_reduction'])} relative reduction among those reached. Under those assumptions it prevents {finance['prevented']:.0f} readmissions and the net figure is ${finance['net_savings']:,.0f}. The reduction is not estimated from this file. Pilot it against a control group before scaling.",
+        "",
+        "## Recommended actions",
+        "",
+        *[f"{code}. {NARRATIVES[code]['action']}" for code in NARRATIVES],
         "",
         "## Checks",
         "",

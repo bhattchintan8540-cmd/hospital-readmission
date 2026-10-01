@@ -70,6 +70,34 @@ A04. Only race, gender and age are available. Adjusted odds compare each race gr
 
 A05. The simulated programme enrols 70.0% of the high-risk tier and assumes a 15.0% relative reduction among those reached. Under those assumptions it prevents 1066 readmissions and the net figure is $14,279,055. The reduction is not estimated from this file. Pilot it against a control group before scaling.
 
+## Recommended actions
+
+B01. Give ages 60-90 a structured follow-up call within 48-72 hours and a medication review. Use a lighter pathway for bands with lower rates and few encounters.
+B02. Plan beds and discharge staff around rehabilitation, psychiatry and cardiovascular surgery. Make specialty a required admission field.
+B03. Enrol patients with 2 or more prior emergency visits in care management at discharge.
+B04. Extend the diabetes discharge bundle to every patient on diabetic medication, not only those with a 250 code.
+B05. Treat a medication change as a risk flag: pharmacist review and a follow-up call within 72 hours.
+B06. Do not trigger outreach from lab count alone. Use it only inside the multi-factor score in A01.
+B07. Review a quarterly dashboard by race and gender after clinical adjustment. Do not act on an unadjusted gap by itself.
+B08. Do not set weight-management policy from this file. Make weight required at admission, confirm the unit, and repeat the analysis.
+B09. Pharmacist-led review when a stay has 20 or more distinct medications.
+B10. Give patients with 3 or more prior outpatient visits one named coordinator and one follow-up plan.
+M01. Add admission_date and discharge_date, then repeat by month and quarter. Until then, plan capacity from the A01 tier, not from a season.
+M02. Flag 8 or more diagnoses at admission for early discharge planning.
+M03. Request discharge disposition, admission type and admission source. Map them to home, home with services, skilled nursing, rehab, other facility, left against advice, and expired or hospice. Exclude expired and hospice from the readmission denominator.
+M04. Look at groups with fewer interventions only after adjusting for diagnosis and severity.
+M05. Size preventive programmes for the diagnosis groups with the highest prior use. Circulatory conditions are the largest group.
+M06. Link a death register or discharge status, plus 90-day and 180-day events, before building a composite outcome.
+M07. Share specialty prescribing and readmission profiles with service leads. Do not treat the differences as proof that a drug causes readmission.
+M08. Treat the table as a hypothesis. Repeat it only after weight capture improves.
+M09. Do not change the formulary from these associations. Use them to choose agents for a matched or randomised review.
+M10. Link survey results to encounter_id, then use a point-biserial correlation or a logistic regression. Report the response rate, because people who answer surveys differ from those who do not.
+A01. High tier: call within 48 hours and a visit within 7 days. Medium: call within 72 hours. Low: standard discharge. Do not use the score to deny care.
+A02. Emergency-reliant: same-week primary care and a case manager. Frequent inpatient: transitional care. Outpatient-engaged: one coordinator. Low prior use: standard discharge unless the A01 tier is High.
+A03. Replace the two yellow inputs with the hospital's average readmission cost and a chart-review estimate of the avoidable share.
+A04. Add insurance, a ZIP deprivation index, language, housing and transport. Screen social needs before discharge and monitor adjusted rates quarterly.
+A05. Pilot for six months against a control group. Replace the yellow assumptions with the observed effect before scaling.
+
 ## Checks
 
 Row reconciliation difference is 0. Train and test patients do not overlap. Risk tiers and segments each cover every cleaned encounter. X1 and X2 values of None were kept as text in the source count.

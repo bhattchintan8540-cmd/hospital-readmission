@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from hospital_readmission.narratives import NARRATIVES
+
 CLEAN_COLUMNS = [
     "encounter_id",
     "patient_id",
@@ -42,6 +44,19 @@ CLEAN_COLUMNS = [
     "dx_band",
     "oof_score",
 ]
+
+
+def _annotate(ws, code: str, wrap, bold) -> None:
+    note = NARRATIVES[code]
+    ws.write(1, 8, "Question", bold)
+    ws.write(2, 8, note["question"], wrap)
+    ws.write(4, 8, "Approach", bold)
+    ws.write(5, 8, note["approach"], wrap)
+    ws.write(7, 8, "Action", bold)
+    ws.write(8, 8, note["action"], wrap)
+    ws.set_column(8, 8, 88)
+    for row in (2, 5, 8):
+        ws.set_row(row, 36)
 
 
 def _col(index: int) -> str:
@@ -84,46 +99,51 @@ def write_workbook(path: Path, results: dict) -> None:
         wb, "B01_Age", "B01. Readmission by age group",
         "Age group", "age", list(results["b01"]["age"]),
         last, title, header, pct, num, results["b01_chi"],
+        code="B01", chart=True, wrap=wrap, bold=label,
     )
-    _specialty_sheet(wb, results, title, header, num, dec, last)
+    _specialty_sheet(wb, results, title, header, num, dec, last, wrap, label)
     _rate_sheet(
         wb, "B03_Emergency", "B03. Prior emergency visits vs readmission",
         "Emergency visits", "ed_band", list(results["b03"]["ed_band"]),
         last, title, header, pct, num, None, results["b03_corr"],
+        code="B03", chart=True, wrap=wrap, bold=label,
     )
-    _b04_sheet(wb, results, title, header, pct, num, last)
-    _b05_sheet(wb, results, title, header, pct, num, dec, last)
+    _b04_sheet(wb, results, title, header, pct, num, last, wrap, label)
+    _b05_sheet(wb, results, title, header, pct, num, dec, last, wrap, label)
     _rate_sheet(
         wb, "B06_Labs", "B06. Lab procedures vs readmission",
         "Lab band", "lab_band", list(results["b06"]["lab_band"]),
         last, title, header, pct, num, None, results["b06_corr"],
+        code="B06", wrap=wrap, bold=label,
     )
-    _b07_sheet(wb, results, title, header, pct, num, last)
-    _b08_sheet(wb, results, title, header, pct, num)
-    _b09_sheet(wb, results, title, header, num, dec, last)
+    _b07_sheet(wb, results, title, header, pct, num, last, wrap, label)
+    _b08_sheet(wb, results, title, header, pct, num, wrap, label)
+    _b09_sheet(wb, results, title, header, num, dec, last, wrap, label)
     _rate_sheet(
         wb, "B10_Outpatient", "B10. Prior outpatient visits vs readmission",
         "Outpatient visits", "op_band", list(results["b10"]["op_band"]),
         last, title, header, pct, num, None, results["b10_corr"],
+        code="B10", wrap=wrap, bold=label,
     )
     _rate_sheet(
         wb, "M01_Sequence", "M01. Sequence proxy, not a calendar trend",
         "Sequence decile", "seq_decile", list(results["m01"]["seq_decile"]),
         last, title, header, pct, num, results["m01_chi"],
+        code="M01", wrap=wrap, bold=label,
     )
-    _value_sheet(wb, "M02_Comorbidity", "M02. Diagnoses, stay and readmission", results["m02"], title, header, pct)
-    _m03_sheet(wb, results, title, header, pct, wrap)
-    _value_sheet(wb, "M04_Demographics", "M04. Demographics vs interventions", results["m04_age"], title, header, pct)
-    _value_sheet(wb, "M05_Diagnosis", "M05. Prior visits by primary diagnosis group", results["m05"], title, header, pct)
-    _value_sheet(wb, "M06_Outcomes", "M06. Repeat utilisation proxy", results["m06_ip"], title, header, pct)
-    _value_sheet(wb, "M07_Prescribing", "M07. Medication use and readmission", results["m07_meds"], title, header, pct)
-    _value_sheet(wb, "M08_Weight_Dx", "M08. Weight group by diagnosis (n<20 suppressed in Python)", results["m08"], title, header, pct)
-    _value_sheet(wb, "M09_Diabetes_Meds", "M09. Diabetic patients, medication vs readmission", results["m09"], title, header, pct)
-    _m10_sheet(wb, title, wrap)
-    _model_sheet(wb, results, title, header, pct, num, dec, yellow, wrap)
-    _segment_sheet(wb, results, title, header, pct, num)
-    _finance_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label)
-    _a04_sheet(wb, results, title, header, dec)
+    _m02_sheet(wb, results, title, header, pct, num, dec, last, wrap, label)
+    _m03_sheet(wb, results, title, header, pct, wrap, label)
+    _m04_sheet(wb, results, title, header, dec, wrap, label)
+    _m05_sheet(wb, results, title, header, pct, dec, wrap, label)
+    _m06_sheet(wb, results, title, header, pct, dec, wrap, label)
+    _m07_sheet(wb, results, title, header, pct, wrap, label)
+    _value_sheet(wb, "M08_Weight_Dx", "M08. Weight group by diagnosis (n<20 left blank)", results["m08"], title, header, pct, "M08", wrap, label)
+    _m09_sheet(wb, results, title, header, pct, dec, wrap, label)
+    _m10_sheet(wb, title, wrap, label)
+    _model_sheet(wb, results, title, header, pct, num, dec, yellow, wrap, label)
+    _segment_sheet(wb, results, title, header, pct, num, dec, last, wrap, label)
+    _finance_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label, wrap)
+    _a04_sheet(wb, results, title, header, dec, wrap, label)
     _a05_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label, wrap)
     wb.close()
 
@@ -315,9 +335,11 @@ def _rate_formulas(ws, header_row, labels, data_col, last, header, pct, num):
     return total
 
 
-def _rate_sheet(wb, name, heading, group_name, column, labels, last, title, header, pct, num, chi=None, corr=None):
+def _rate_sheet(wb, name, heading, group_name, column, labels, last, title, header, pct, num, chi=None, corr=None, code=None, chart=False, wrap=None, bold=None):
     ws = wb.add_worksheet(name)
     ws.write(0, 0, heading, title)
+    if code:
+        _annotate(ws, code, wrap, bold)
     ws.write(2, 0, group_name)
     end = _rate_formulas(ws, 3, labels, column, last, header, pct, num)
     row = end + 2
@@ -336,13 +358,27 @@ def _rate_sheet(wb, name, heading, group_name, column, labels, last, title, head
         ws.write(row + 1, 1, corr["p"])
         ws.write(row + 2, 0, "Strength")
         ws.write(row + 2, 1, corr["strength"])
+    if chart:
+        drawing = wb.add_chart({"type": "column"})
+        first = 4
+        last_row = 3 + len(labels)
+        drawing.add_series({
+            "name": "Readmission rate",
+            "categories": [name, first, 0, last_row, 0],
+            "values": [name, first, 3, last_row, 3],
+        })
+        drawing.set_y_axis({"num_format": "0%"})
+        drawing.set_legend({"none": True})
+        drawing.set_title({"name": heading})
+        ws.insert_chart("F3", drawing, {"x_scale": 1.1, "y_scale": 1.0})
     ws.set_column(0, 0, 28)
     ws.set_column(1, 3, 20)
 
 
-def _specialty_sheet(wb, results, title, header, num, dec, last):
+def _specialty_sheet(wb, results, title, header, num, dec, last, wrap, bold):
     ws = wb.add_worksheet("B02_Specialty")
     ws.write(0, 0, "B02. Average length of stay by specialty (n at least 30)", title)
+    _annotate(ws, "B02", wrap, bold)
     letter = CLEAN_LETTER["medical_specialty"]
     stay = CLEAN_LETTER["time_in_hospital"]
     ws.write(2, 0, "Medical specialty", header)
@@ -358,9 +394,10 @@ def _specialty_sheet(wb, results, title, header, num, dec, last):
     ws.set_column(1, 2, 22)
 
 
-def _b04_sheet(wb, results, title, header, pct, num, last):
+def _b04_sheet(wb, results, title, header, pct, num, last, wrap, bold):
     ws = wb.add_worksheet("B04_Diabetes")
     ws.write(0, 0, "B04. Readmission among patients with diabetes", title)
+    _annotate(ws, "B04", wrap, bold)
     med = CLEAN_LETTER["diabetesMed"]
     dx = CLEAN_LETTER["diabetes_dx"]
     target = CLEAN_LETTER["readmitted"]
@@ -385,9 +422,10 @@ def _b04_sheet(wb, results, title, header, pct, num, last):
     ws.set_column(1, 3, 16)
 
 
-def _b05_sheet(wb, results, title, header, pct, num, dec, last):
+def _b05_sheet(wb, results, title, header, pct, num, dec, last, wrap, bold):
     ws = wb.add_worksheet("B05_Med_Change")
     ws.write(0, 0, "B05. Diabetic medication change vs readmission", title)
+    _annotate(ws, "B05", wrap, bold)
     _rate_formulas(ws, 2, ["Ch", "No"], "change", last, header, pct, num)
     z = results["b05_z"]
     ws.write(8, 0, "Difference in rate", header)
@@ -403,19 +441,32 @@ def _b05_sheet(wb, results, title, header, pct, num, dec, last):
     ws.set_column(0, 0, 40)
 
 
-def _b07_sheet(wb, results, title, header, pct, num, last):
+def _b07_sheet(wb, results, title, header, pct, num, last, wrap, bold):
     ws = wb.add_worksheet("B07_Race_Gender")
     ws.write(0, 0, "B07. Readmission by race and by gender", title)
-    _rate_formulas(ws, 2, list(results["b07_race"]["race"]), "race", last, header, pct, num)
-    start = 4 + len(results["b07_race"]) + 2
+    _annotate(ws, "B07", wrap, bold)
+    end = _rate_formulas(ws, 2, list(results["b07_race"]["race"]), "race", last, header, pct, num)
+    start = end + 2
     ws.write(start, 0, "Gender")
-    _rate_formulas(ws, start + 1, list(results["b07_gender"]["gender"]), "gender", last, header, pct, num)
+    gender_end = _rate_formulas(ws, start + 1, list(results["b07_gender"]["gender"]), "gender", last, header, pct, num)
+    cross = results["b07_cross"]
+    row = gender_end + 2
+    ws.write(row, 0, "Race by gender", bold)
+    for c, col in enumerate(cross.columns):
+        ws.write(row + 1, c, str(col), header)
+    for i, item in enumerate(cross.itertuples(index=False)):
+        for c, value in enumerate(item):
+            if isinstance(value, float):
+                ws.write_number(row + 2 + i, c, float(value), pct if "rate" in str(cross.columns[c]) else num)
+            else:
+                ws.write(row + 2 + i, c, str(value))
     ws.set_column(0, 0, 24)
 
 
-def _b08_sheet(wb, results, title, header, pct, num):
+def _b08_sheet(wb, results, title, header, pct, num, wrap, bold):
     ws = wb.add_worksheet("B08_Weight")
     ws.write(0, 0, "B08. Weight is recorded for too few encounters to support a population conclusion", title)
+    _annotate(ws, "B08", wrap, bold)
     ws.write(2, 0, "Weight recorded", header)
     ws.write_number(2, 1, results["b08_recorded"], num)
     ws.write(3, 0, "Share recorded", header)
@@ -435,9 +486,10 @@ def _b08_sheet(wb, results, title, header, pct, num):
     ws.set_column(4, 4, 36)
 
 
-def _b09_sheet(wb, results, title, header, num, dec, last):
+def _b09_sheet(wb, results, title, header, num, dec, last, wrap, bold):
     ws = wb.add_worksheet("B09_Medications_Stay")
     ws.write(0, 0, "B09. Medications vs length of stay", title)
+    _annotate(ws, "B09", wrap, bold)
     letter = CLEAN_LETTER["med_band"]
     stay = CLEAN_LETTER["time_in_hospital"]
     ws.write(2, 0, "Medications band", header)
@@ -461,9 +513,11 @@ def _b09_sheet(wb, results, title, header, num, dec, last):
     ws.set_column(0, 0, 40)
 
 
-def _value_sheet(wb, name, heading, frame, title, header, pct):
+def _value_sheet(wb, name, heading, frame, title, header, pct, code=None, wrap=None, bold=None):
     ws = wb.add_worksheet(name)
     ws.write(0, 0, heading, title)
+    if code:
+        _annotate(ws, code, wrap, bold)
     if frame is None or len(frame) == 0:
         ws.write(2, 0, "No table. See the note on this question in the report.")
         return
@@ -483,9 +537,10 @@ def _value_sheet(wb, name, heading, frame, title, header, pct):
     ws.set_column(0, max(len(frame.columns) - 1, 0), 22)
 
 
-def _m03_sheet(wb, results, title, header, pct, wrap):
+def _m03_sheet(wb, results, title, header, pct, wrap, bold):
     ws = wb.add_worksheet("M03_Disposition")
     ws.write(0, 0, "M03. Discharge disposition", title)
+    _annotate(ws, "M03", wrap, bold)
     ws.write(2, 0, results["m03_note"], wrap)
     ws.set_row(2, 48)
     ws.set_column(0, 0, 100)
@@ -504,17 +559,132 @@ def _value_sheet_into(ws, frame, header, pct, start):
                 ws.write(r, c, value if not isinstance(value, (int, float)) else value)
 
 
-def _m10_sheet(wb, title, wrap):
+def _frame_at(ws, frame, header, pct, dec, start):
+    for c, col in enumerate(frame.columns):
+        ws.write(start, c, str(col), header)
+    name = str(col) if False else ""
+    for r, row in enumerate(frame.itertuples(index=False), start=start + 1):
+        for c, value in enumerate(row):
+            col_name = str(frame.columns[c])
+            if value is None or (not isinstance(value, str) and pd.isna(value)):
+                ws.write_blank(r, c, None)
+                continue
+            if hasattr(value, "item") and not isinstance(value, str):
+                value = value.item()
+            if isinstance(value, float):
+                fmt = pct if "rate" in col_name or col_name.endswith("_p") else dec
+                ws.write_number(r, c, value, fmt)
+            elif isinstance(value, int):
+                ws.write_number(r, c, value)
+            else:
+                ws.write(r, c, str(value))
+    return start + len(frame) + 2
+
+
+def _m02_sheet(wb, results, title, header, pct, num, dec, last, wrap, bold):
+    ws = wb.add_worksheet("M02_Comorbidity")
+    ws.write(0, 0, "M02. Diagnoses, length of stay and readmission", title)
+    _annotate(ws, "M02", wrap, bold)
+    letter = CLEAN_LETTER["dx_band"]
+    stay = CLEAN_LETTER["time_in_hospital"]
+    target = CLEAN_LETTER["readmitted"]
+    ws.write(2, 0, "Diagnoses", header)
+    ws.write(2, 1, "Encounters", header)
+    ws.write(2, 2, "Avg stay", header)
+    ws.write(2, 3, "Readmitted", header)
+    ws.write(2, 4, "Rate", header)
+    for i, band in enumerate(results["m02"]["dx_band"].dropna()):
+        row = 3 + i
+        excel = row + 1
+        ws.write(row, 0, band)
+        ws.write_formula(row, 1, f'=COUNTIFS(Clean_Data!${letter}$2:${letter}${last},A{excel})', num)
+        ws.write_formula(row, 2, f'=AVERAGEIFS(Clean_Data!${stay}$2:${stay}${last},Clean_Data!${letter}$2:${letter}${last},A{excel})', dec)
+        ws.write_formula(row, 3, f'=COUNTIFS(Clean_Data!${letter}$2:${letter}${last},A{excel},Clean_Data!${target}$2:${target}${last},1)', num)
+        ws.write_formula(row, 4, f'=IF(B{excel}=0,"",D{excel}/B{excel})', pct)
+    ws.write(10, 0, "Diagnoses vs stay, r")
+    ws.write_number(10, 1, results["m02_stay"]["r"], dec)
+    ws.write(11, 0, "Diagnoses vs readmission, r")
+    ws.write_number(11, 1, results["m02_readmit"]["r"], dec)
+    ws.set_column(0, 0, 36)
+
+
+def _m04_sheet(wb, results, title, header, dec, wrap, bold):
+    ws = wb.add_worksheet("M04_Demographics")
+    ws.write(0, 0, "M04. Demographics vs lab tests, medications and procedures", title)
+    _annotate(ws, "M04", wrap, bold)
+    row = 2
+    for caption, frame, anova_key in (
+        ("By age", results["m04_age"], "age"),
+        ("By race", results["m04_race"], "race"),
+        ("By gender, unknown gender excluded", results["m04_gender"], "gender"),
+    ):
+        ws.write(row, 0, caption, bold)
+        row = _frame_at(ws, frame, header, None, dec, row + 1)
+        anova = results["m04_anova"][anova_key]
+        ws.write(row, 0, "ANOVA p, labs")
+        ws.write_number(row, 1, anova["num_lab_procedures"], dec)
+        ws.write(row + 1, 0, "ANOVA p, medications")
+        ws.write_number(row + 1, 1, anova["num_medications"], dec)
+        ws.write(row + 2, 0, "ANOVA p, procedures")
+        ws.write_number(row + 2, 1, anova["num_procedures"], dec)
+        row += 4
+    ws.set_column(0, 0, 42)
+
+
+def _m05_sheet(wb, results, title, header, pct, dec, wrap, bold):
+    ws = wb.add_worksheet("M05_Diagnosis")
+    ws.write(0, 0, "M05. Prior visits by primary diagnosis", title)
+    _annotate(ws, "M05", wrap, bold)
+    end = _frame_at(ws, results["m05"], header, pct, dec, 2)
+    ws.write(end, 0, "Top 15 primary diagnosis codes", bold)
+    _frame_at(ws, results["m05_codes"], header, pct, dec, end + 1)
+    ws.set_column(0, 0, 32)
+
+
+def _m06_sheet(wb, results, title, header, pct, dec, wrap, bold):
+    ws = wb.add_worksheet("M06_Outcomes")
+    ws.write(0, 0, "M06. Outcomes beyond readmission", title)
+    _annotate(ws, "M06", wrap, bold)
+    ws.write(2, 0, "No death date or follow-up outcome is in the file. The tables below are repeat-use proxies only.", wrap)
+    end = _frame_at(ws, results["m06_enc"], header, pct, dec, 4)
+    ws.write(end, 0, "Prior inpatient stays", bold)
+    _frame_at(ws, results["m06_ip"], header, pct, dec, end + 1)
+    ws.set_column(0, 0, 36)
+
+
+def _m07_sheet(wb, results, title, header, pct, wrap, bold):
+    ws = wb.add_worksheet("M07_Prescribing")
+    ws.write(0, 0, "M07. Prescribing patterns", title)
+    _annotate(ws, "M07", wrap, bold)
+    end = _frame_at(ws, results["m07_meds"], header, pct, None, 2)
+    ws.write(end, 0, "Eight largest recorded specialties", bold)
+    _frame_at(ws, results["m07_spec"], header, pct, None, end + 1)
+    ws.set_column(0, 0, 28)
+
+
+def _m09_sheet(wb, results, title, header, pct, dec, wrap, bold):
+    ws = wb.add_worksheet("M09_Diabetes_Meds")
+    ws.write(0, 0, "M09. Diabetic medications among patients on diabetic medication", title)
+    _annotate(ws, "M09", wrap, bold)
+    end = _frame_at(ws, results["m09"], header, pct, dec, 2)
+    ws.write(end, 0, "Insulin dosing status", bold)
+    _frame_at(ws, results["m09_insulin"], header, pct, dec, end + 1)
+    ws.set_column(0, 0, 28)
+
+
+def _m10_sheet(wb, title, wrap, bold):
     ws = wb.add_worksheet("M10_Satisfaction")
     ws.write(0, 0, "M10. Patient satisfaction", title)
+    _annotate(ws, "M10", wrap, bold)
     ws.write(2, 0, "Not answerable. The Kaggle file has no satisfaction or survey column. No correlation is reported.", wrap)
     ws.set_column(0, 0, 100)
 
 
-def _model_sheet(wb, results, title, header, pct, num, dec, yellow, wrap):
+def _model_sheet(wb, results, title, header, pct, num, dec, yellow, wrap, bold):
     ws = wb.add_worksheet("A01_Risk_Model")
     model = results["model"]
     ws.write(0, 0, "A01. Logistic regression risk model", title)
+    _annotate(ws, "A01", wrap, bold)
     ws.write(2, 0, "Held-out AUC, logistic regression")
     ws.write_number(2, 1, model["auc_logit"], dec)
     ws.write(3, 0, "Held-out AUC, gradient boosting benchmark")
@@ -578,14 +748,23 @@ def _model_sheet(wb, results, title, header, pct, num, dec, yellow, wrap):
     ws.set_column(1, 4, 18)
 
 
-def _segment_sheet(wb, results, title, header, pct, num):
+def _segment_sheet(wb, results, title, header, pct, num, dec, last, wrap, bold):
     ws = wb.add_worksheet("A02_Segments")
     ws.write(0, 0, "A02. K-means segments on prior inpatient, outpatient and emergency visits", title)
-    _rate_formulas(
-        ws, 2,
-        ["Emergency-reliant", "Frequent inpatient", "Outpatient-engaged", "Low prior utilisation"],
-        "segment", len(results["df"]) + 1, header, pct, num,
-    )
+    _annotate(ws, "A02", wrap, bold)
+    labels = ["Emergency-reliant", "Frequent inpatient", "Outpatient-engaged", "Low prior utilisation"]
+    _rate_formulas(ws, 2, labels, "segment", last, header, pct, num)
+    ws.write(2, 4, "Avg inpatient", header)
+    ws.write(2, 5, "Avg outpatient", header)
+    ws.write(2, 6, "Avg emergency", header)
+    ws.write(2, 7, "Avg stay", header)
+    segment = CLEAN_LETTER["segment"]
+    for i in range(len(labels)):
+        excel = 4 + i
+        ws.write_formula(3 + i, 4, f'=AVERAGEIFS(Clean_Data!${CLEAN_LETTER["number_inpatient"]}$2:${CLEAN_LETTER["number_inpatient"]}${last},Clean_Data!${segment}$2:${segment}${last},A{excel})', dec)
+        ws.write_formula(3 + i, 5, f'=AVERAGEIFS(Clean_Data!${CLEAN_LETTER["number_outpatient"]}$2:${CLEAN_LETTER["number_outpatient"]}${last},Clean_Data!${segment}$2:${segment}${last},A{excel})', dec)
+        ws.write_formula(3 + i, 6, f'=AVERAGEIFS(Clean_Data!${CLEAN_LETTER["number_emergency"]}$2:${CLEAN_LETTER["number_emergency"]}${last},Clean_Data!${segment}$2:${segment}${last},A{excel})', dec)
+        ws.write_formula(3 + i, 7, f'=AVERAGEIFS(Clean_Data!${CLEAN_LETTER["time_in_hospital"]}$2:${CLEAN_LETTER["time_in_hospital"]}${last},Clean_Data!${segment}$2:${segment}${last},A{excel})', dec)
     ws.write(10, 0, "Silhouette on an 8,000-row sample")
     for i, (k, score) in enumerate(results["segments"]["silhouette"].items()):
         ws.write(11 + i, 0, f"k={k}")
@@ -593,9 +772,10 @@ def _segment_sheet(wb, results, title, header, pct, num):
     ws.set_column(0, 0, 28)
 
 
-def _finance_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label):
+def _finance_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label, wrap):
     ws = wb.add_worksheet("A03_Financial")
     ws.write(0, 0, "A03. Scenario cost of readmissions. Yellow cells are assumptions.", title)
+    _annotate(ws, "A03", wrap, label)
     assumptions = results["assumptions"]
     ws.write(2, 0, "Average cost per 30-day readmission", label)
     ws.write_number(2, 1, assumptions["cost_per_readmission"], yellow_num)
@@ -610,13 +790,25 @@ def _finance_sheet(wb, results, title, header, pct, num, money, yellow, yellow_n
     ws.write(8, 0, "Avoidable cost", label)
     ws.write_formula(8, 1, "=B8*B3", money)
     ws.write(10, 0, "These dollars are not in the file. Replace the yellow cells with hospital finance figures.", label)
+    ws.write(12, 0, "Avoidable cost by share (rows) and cost per readmission (columns)", label)
+    costs = [10000, 15000, 20000, 25000]
+    shares = [0.15, 0.20, 0.27, 0.35, 0.40]
+    for j, cost in enumerate(costs):
+        ws.write_number(13, 1 + j, cost, yellow_num)
+    for i, share in enumerate(shares):
+        ws.write_number(14 + i, 0, share, yellow)
+        excel = 15 + i
+        for j in range(len(costs)):
+            cost_cell = f"{chr(66 + j)}$14"
+            ws.write_formula(14 + i, 1 + j, f"=$B$6*{cost_cell}*A{excel}", money)
     ws.set_column(0, 0, 46)
-    ws.set_column(1, 1, 18)
+    ws.set_column(1, 4, 16)
 
 
-def _a04_sheet(wb, results, title, header, dec):
+def _a04_sheet(wb, results, title, header, dec, wrap, bold):
     ws = wb.add_worksheet("A04_Social")
     ws.write(0, 0, "A04. Adjusted odds. No income, insurance, housing or neighbourhood field exists.", title)
+    _annotate(ws, "A04", wrap, bold)
     frame = results["a04"]
     for c, col in enumerate(frame.columns):
         ws.write(2, c, col, header)
@@ -632,6 +824,7 @@ def _a04_sheet(wb, results, title, header, dec):
 def _a05_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, label, wrap):
     ws = wb.add_worksheet("A05_Followup")
     ws.write(0, 0, "A05. Post-discharge programme simulation. The effect size is an assumption.", title)
+    _annotate(ws, "A05", wrap, label)
     ws.write(2, 0, "Enrolment of the high-risk tier", label)
     ws.write_number(2, 1, results["assumptions"]["enrolment"], yellow)
     ws.write(3, 0, "Relative reduction among enrolled", label)
@@ -661,5 +854,16 @@ def _a05_sheet(wb, results, title, header, pct, num, money, yellow, yellow_num, 
     ws.write_formula(14, 1, "=B13-B14", money)
     ws.write(16, 0, "Eligibility uses the risk tier and utilisation only. The reduction is not an effect estimated from this file.", wrap)
     ws.set_row(16, 32)
+    ws.write(18, 0, "Readmissions prevented by enrolment (rows) and relative reduction (columns)", label)
+    reductions = [0.10, 0.15, 0.20, 0.25]
+    enrolments = [0.50, 0.70, 0.90]
+    for j, reduction in enumerate(reductions):
+        ws.write_number(19, 1 + j, reduction, yellow)
+    for i, enrolment in enumerate(enrolments):
+        ws.write_number(20 + i, 0, enrolment, yellow)
+        excel = 21 + i
+        for j in range(len(reductions)):
+            reduction_cell = f"{chr(66 + j)}$20"
+            ws.write_formula(20 + i, 1 + j, f"=$B$9*A{excel}*{reduction_cell}", num)
     ws.set_column(0, 0, 48)
-    ws.set_column(1, 1, 18)
+    ws.set_column(1, 4, 16)

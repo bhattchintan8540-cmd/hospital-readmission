@@ -15,6 +15,11 @@ def test_age_midpoint_and_diagnosis_groups():
     assert diag_group("?") == "Unknown"
 
 
+def test_avoidable_cost_identity():
+    readmissions = 22609
+    assert round(readmissions * 0.27 * 15000) == 91566450
+
+
 def test_two_proportion_and_chi_square():
     result = two_proportion(50, 100, 30, 100)
     assert result["diff"] == 0.2
