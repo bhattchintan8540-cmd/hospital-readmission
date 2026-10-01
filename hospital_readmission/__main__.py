@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from hospital_readmission.analyze import analyze
+from hospital_readmission.dashboard import write_dashboard
 from hospital_readmission.prepare import load
 from hospital_readmission.report import write_report
 from hospital_readmission.workbook import write_workbook
@@ -34,6 +35,7 @@ def main() -> int:
     out = ROOT / "outputs"
     write_workbook(out / "Hospital_Readmission_Analysis.xlsx", results)
     write_report(out / "RESULTS.md", results)
+    write_dashboard(results, ROOT / "dashboard")
     print(
         f"encounters={meta['analysis_rows']} readmitted={meta['readmitted_n']} "
         f"auc={results['model']['auc_logit']:.3f} gb={results['model']['auc_gb']:.3f}"

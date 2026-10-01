@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Risk tiers and where to act</title>
+  <style>
+    :root {
+      --ink: #1c2b33;
+      --muted: #5c6d76;
+      --line: #d7e0e4;
+      --card: #ffffff;
+      --bg: #f4f7f8;
+      --teal: #0f6e6b;
+      --teal-dark: #0b3d45;
+      --amber: #a15c07;
+      --amber-bg: #fff6e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 15px/1.45 "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    header {
+      background: var(--teal-dark); color: white; padding: 28px 40px 22px;
+    }
+    header p { margin: 6px 0 0; color: #d5e4e6; max-width: 820px; }
+    h1 { margin: 0; font-size: 28px; font-weight: 650; }
+    main { padding: 24px 40px 40px; max-width: 1180px; }
+    h2 { margin: 28px 0 12px; font-size: 18px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .kpi .label { color: var(--muted); font-size: 13px; }
+    .kpi .value { font-size: 28px; font-weight: 680; margin-top: 4px; }
+    .kpi .note { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; }
+    .bar-row { display: grid; grid-template-columns: 250px 1fr 64px; gap: 8px; align-items: center; margin: 7px 0; }
+    .bar-label { font-size: 12px; line-height: 1.2; }
+    .note { color: var(--muted); font-size: 12px; }
+    .bar-track { background: #e7eef0; border-radius: 999px; height: 12px; }
+    .bar-fill { display: block; height: 12px; border-radius: 999px; background: var(--teal); }
+    .bar-value { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+    .callout { background: var(--amber-bg); border: 1px solid #f0d7a8; color: #6d4308; border-radius: 10px; padding: 14px 16px; }
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    li { margin: 4px 0; }
+    footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Risk tiers and where to act</h1>
+    <p>Hospital administration case study. Source file: Kaggle Hospital Administration Data, cleaned to 48,911 encounters.</p>
+  </header>
+  <main>
+    
+        <section class="kpis">
+          <article class="card kpi"><div class="label">High-risk tier</div><div class="value">62.3%</div><div class="note">16,304 encounters</div></article>
+          <article class="card kpi"><div class="label">Medium-risk tier</div><div class="value">44.0%</div><div class="note">16,303 encounters</div></article>
+          <article class="card kpi"><div class="label">Low-risk tier</div><div class="value">32.4%</div><div class="note">16,304 encounters</div></article>
+          <article class="card kpi"><div class="label">Logistic AUC</div><div class="value">0.652</div><div class="note">Gradient boosting 0.667</div></article>
+        </section>
+        <div class="grid">
+          <section class="card">
+            <h2>Longest stays by recorded specialty</h2>
+            <div class='bar-row'><span class='bar-label'>PhysicalMedicineandRehabilitation</span><span class='bar-track'><span class='bar-fill' style='width:90%'></span></span><span class='bar-value'>9.0d</span></div>
+<div class='bar-row'><span class='bar-label'>Psychiatry</span><span class='bar-track'><span class='bar-fill' style='width:67%'></span></span><span class='bar-value'>6.7d</span></div>
+<div class='bar-row'><span class='bar-label'>Psychology</span><span class='bar-track'><span class='bar-fill' style='width:61%'></span></span><span class='bar-value'>6.1d</span></div>
+<div class='bar-row'><span class='bar-label'>Surgery-Cardiovascular/Thoracic</span><span class='bar-track'><span class='bar-fill' style='width:60%'></span></span><span class='bar-value'>6.0d</span></div>
+<div class='bar-row'><span class='bar-label'>Surgery-Thoracic</span><span class='bar-track'><span class='bar-fill' style='width:56%'></span></span><span class='bar-value'>5.6d</span></div>
+<div class='bar-row'><span class='bar-label'>Pulmonology</span><span class='bar-track'><span class='bar-fill' style='width:52%'></span></span><span class='bar-value'>5.2d</span></div>
+<div class='bar-row'><span class='bar-label'>Oncology</span><span class='bar-track'><span class='bar-fill' style='width:52%'></span></span><span class='bar-value'>5.2d</span></div>
+<div class='bar-row'><span class='bar-label'>Surgery-Cardiovascular</span><span class='bar-track'><span class='bar-fill' style='width:51%'></span></span><span class='bar-value'>5.1d</span></div>
+          </section>
+          <section class="card">
+            <h2>Utilisation segments</h2>
+            <div class='bar-row'><span class='bar-label'>Emergency-reliant</span><span class='bar-track'><span class='bar-fill' style='width:80%'></span></span><span class='bar-value'>63.8%</span></div>
+<div class='bar-row'><span class='bar-label'>Frequent inpatient</span><span class='bar-track'><span class='bar-fill' style='width:73%'></span></span><span class='bar-value'>58.2%</span></div>
+<div class='bar-row'><span class='bar-label'>Outpatient-engaged</span><span class='bar-track'><span class='bar-fill' style='width:68%'></span></span><span class='bar-value'>54.1%</span></div>
+<div class='bar-row'><span class='bar-label'>Low prior utilisation</span><span class='bar-track'><span class='bar-fill' style='width:45%'></span></span><span class='bar-value'>36.2%</span></div>
+          </section>
+        </div>
+        <section class="card">
+          <h2>Actions supported by this file</h2>
+          <ul>
+            <li>Call the high-risk tier within 48 hours and arrange a visit within 7 days. Do not use the score to deny care.</li>
+            <li>Flag two or more prior emergency visits, a diabetic medication change, and eight or more diagnoses.</li>
+            <li>Pharmacist review when 20 or more medications were prescribed, or when diabetic therapy changed.</li>
+            <li>Make specialty and weight required fields. Add admission dates, discharge disposition, cost, and satisfaction before those questions can be answered.</li>
+          </ul>
+        </section>
+        <footer>Tiers are out-of-fold terciles from the 13-variable logistic model. Race and gender are not inputs.</footer>
+        
+  </main>
+</body>
+</html>
