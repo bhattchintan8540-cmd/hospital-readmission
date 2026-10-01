@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+data/*.csv
+data/*.zip
+outputs/run_log.txt
