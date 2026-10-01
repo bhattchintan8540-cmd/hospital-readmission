@@ -78,3 +78,4 @@ The run stops if the cleaned file is not 48,911 encounters, 22,609 readmissions,
 ## Limits
 
 Weight and specialty are poorly captured. Patients can appear more than once, so ordinary standard errors are slightly too small. The risk score supports follow-up intensity. It is not a reason to deny care.
+# hospital-readmission
