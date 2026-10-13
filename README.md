@@ -1,4 +1,4 @@
-# Hospital readmission analysis
+# Hospital Administration analysis
 
 A hospital administration case study on what is associated with readmission within 30 days, and where follow-up should go first.
 
