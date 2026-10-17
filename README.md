@@ -31,7 +31,6 @@ The only dataset is the Kaggle extract [Hospital Administration Data](https://ww
 | `outputs/Hospital_Readmission_Analysis.xlsx` | Workbook. Rate tables are formulas on `Clean_Data`. Yellow cells are assumptions. |
 | `outputs/RESULTS.md` | Findings, limits, and the action for each question. |
 | `dashboard/` | Dashboard pages. |
-| `dashboard/screenshots/` | Screenshots of those pages. |
 | `tests/test_core.py` | Checks on cleaning, the published age counts, and the cost identity. |
 | `requirements.txt` | Python packages. |
 
@@ -69,13 +68,6 @@ The run stops if the cleaned file is not 48,911 encounters, 22,609 readmissions,
 - The logistic model AUC is **0.652** on the patient holdout. The gradient-boosting benchmark is **0.667**. The high-risk third is readmitted at about **62%**, well above the low-risk third. Race and gender are not inputs to the score.
 - There is no admission date, discharge disposition, cost, satisfaction score, or death field. Those questions are not filled in.
 
-## Dashboard
-
-![Readmission overview](dashboard/screenshots/01_overview.png)
-
-![Risk tiers and actions](dashboard/screenshots/02_risk_and_actions.png)
-
 ## Limits
 
 Weight and specialty are poorly captured. Patients can appear more than once, so ordinary standard errors are slightly too small. The risk score supports follow-up intensity. It is not a reason to deny care.
-# hospital-readmission
